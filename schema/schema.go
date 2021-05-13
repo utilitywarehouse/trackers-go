@@ -48,16 +48,14 @@ func (e *HomeInsuranceQuoteAttemptedEvent) Payload() map[string]string {
 	}
 }
 
-type HomeInsuranceRenewalDateAttribute struct {
-	attribute string
-}
+type HomeInsuranceRenewalDateAttribute string
 
-func (a *HomeInsuranceRenewalDateAttribute) Name() string {
+func (a HomeInsuranceRenewalDateAttribute) Name() string {
 	return "insurance.home.renewalAt"
 }
 
-func (a *HomeInsuranceRenewalDateAttribute) Value() interface{} {
-	return a.attribute
+func (a HomeInsuranceRenewalDateAttribute) Value() interface{} {
+	return a
 }
 
 type Identity struct {

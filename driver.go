@@ -1,18 +1,19 @@
-package go_example
+package main
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/mParticle/mparticle-go-sdk/events"
-	"github.com/utilitywarehouse/mparticle-data-plan/go-example/schema"
+	"github.com/utilitywarehouse/tracker-example/schema"
 )
 
 type MParticleTracker struct {
 	Environment events.Environment
-	APIKey string
-	APISecret string
-	Client *events.APIClient
+	APIKey      string
+	APISecret   string
+	Client      *events.APIClient
 }
 
 func NewMParticleTracker(APIKey, APISecret string, isDev bool) *MParticleTracker {
@@ -36,9 +37,9 @@ func NewMParticleTracker(APIKey, APISecret string, isDev bool) *MParticleTracker
 func (t *MParticleTracker) Track(
 	ctx context.Context,
 	schemaName string,
-	schemaVersion string,
-	identity schema.Identity,
-	payloads... interface{},
+	schemaVersion int,
+	identity *schema.Identity,
+	payloads ...interface{},
 ) error {
 
 	mappedID := identity.Map()
@@ -48,13 +49,13 @@ func (t *MParticleTracker) Track(
 	batch.BatchContext = &events.BatchContext{
 		DataPlan: &events.DataPlanContext{
 			PlanID:      schemaName,
-			PlanVersion: schemaVersion,
+			PlanVersion: int64(schemaVersion),
 		},
 	}
 
 	batch.UserIdentities = &events.UserIdentities{
 		OtherID4: mappedID.Other4,
-		Email: mappedID.Email,
+		Email:    mappedID.Email,
 	}
 	batch.UserAttributes = make(map[string]interface{})
 	batch.Events = []events.Event{}
@@ -84,6 +85,8 @@ func (t *MParticleTracker) Track(
 		},
 	)
 
+	spew.Dump(batch)
+
 	result, err := t.Client.EventsAPI.UploadEvents(calLCtx, batch)
 
 	if result == nil || result.StatusCode != 202 {
@@ -94,5 +97,5 @@ func (t *MParticleTracker) Track(
 		)
 	}
 
+	return nil
 }
-
