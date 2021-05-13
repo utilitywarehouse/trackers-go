@@ -12,8 +12,7 @@ func main() {
 
 	err := tracker.Track(
 		context.Background(),
-		schema.SchemaName,
-		schema.SchemaVersion,
+		schema.Info,
 		&schema.Identity{CustomerPersonId: "abc"},
 		&schema.HomeInsuranceQuoteAttemptedEvent{
 			QuoteId:        "abc",

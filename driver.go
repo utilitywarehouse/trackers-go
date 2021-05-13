@@ -6,8 +6,26 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/mParticle/mparticle-go-sdk/events"
-	"github.com/utilitywarehouse/tracker-example/schema"
 )
+
+type SchemaInfo interface {
+	Name() string
+	Version() int64
+}
+
+type Event interface {
+	Payload() map[string]string
+	Name() string
+}
+
+type Attribute interface {
+	Name() string
+	Value() interface{}
+}
+
+type Identity interface {
+	Map() map[string]string
+}
 
 type MParticleTracker struct {
 	Environment events.Environment
@@ -36,40 +54,46 @@ func NewMParticleTracker(APIKey, APISecret string, isDev bool) *MParticleTracker
 
 func (t *MParticleTracker) Track(
 	ctx context.Context,
-	schemaName string,
-	schemaVersion int,
-	identity *schema.Identity,
+	schema SchemaInfo,
+	identity Identity,
 	payloads ...interface{},
 ) error {
-
-	mappedID := identity.Map()
 
 	batch := events.Batch{Environment: t.Environment}
 
 	batch.BatchContext = &events.BatchContext{
 		DataPlan: &events.DataPlanContext{
-			PlanID:      schemaName,
-			PlanVersion: int64(schemaVersion),
+			PlanID:      schema.Name(),
+			PlanVersion: schema.Version(),
 		},
 	}
 
-	batch.UserIdentities = &events.UserIdentities{
-		OtherID4: mappedID.Other4,
-		Email:    mappedID.Email,
+	batch.UserIdentities = &events.UserIdentities{}
+
+	for key, val := range identity.Map() {
+		switch key {
+		case "OtherID4":
+			batch.UserIdentities.OtherID4 = val
+			break
+		case "Email":
+			batch.UserIdentities.Email = val
+			break
+		}
 	}
+
 	batch.UserAttributes = make(map[string]interface{})
 	batch.Events = []events.Event{}
 
 	for _, p := range payloads {
 		switch x := p.(type) {
-		case schema.Event:
+		case Event:
 			customEvent := events.NewCustomEvent()
 			customEvent.Data.EventName = x.Name()
 			customEvent.Data.CustomEventType = events.OtherCustomEventType
 			customEvent.Data.CustomAttributes = x.Payload()
 			batch.Events = append(batch.Events, customEvent)
 			break
-		case schema.Attribute:
+		case Attribute:
 			batch.UserAttributes[x.Name()] = x.Value()
 		default:
 			return errors.New("could not convert payloads into either Event or Attribute")

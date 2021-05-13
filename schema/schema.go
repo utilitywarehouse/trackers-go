@@ -1,16 +1,15 @@
 package schema
 
-const SchemaName = "insurance"
-const SchemaVersion = 1
+type Schema string
 
-type Event interface {
-	Payload() map[string]string
-	Name() string
+var Info = Schema("insurance/1")
+
+func (s Schema) Name() string {
+	return "insurance"
 }
 
-type Attribute interface {
-	Name() string
-	Value() interface{}
+func (s Schema) Version() int64 {
+	return 1
 }
 
 type Product string
@@ -63,15 +62,9 @@ type Identity struct {
 	Email string `json:"email,omitempty"` // email of the person logging in
 }
 
-type MappedIdentity struct {
-	Other4 string `json:"Other4,omitempty"` // a UUID of a person, generated as UUIDv5 of account_number until we resolve the people ID problem
-	Email string `json:"Email,omitempty"` // email of the person logging in
-}
-
-// Map - returns mapped identity
-func (o *Identity) Map() *MappedIdentity {
-	return &MappedIdentity{
-		Other4: o.CustomerPersonId,
-		Email: o.Email,
+func (o *Identity) Map() map[string]string {
+	return map[string]string{
+		"Other4": o.CustomerPersonId,
+		"Email": o.Email,
 	}
 }
