@@ -1,4 +1,4 @@
-module github.com/utilitywarehouse/tracker-example
+module github.com/utilitywarehouse/trackers-go
 
 go 1.13
 

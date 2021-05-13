@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/utilitywarehouse/tracker-example/schema"
+	"github.com/utilitywarehouse/trackers-go/example/schema"
+	"github.com/utilitywarehouse/trackers-go/mparticle"
 	"log"
 )
 
 func main() {
 
-	tracker := NewMParticleTracker("key", "secret", true)
+	tracker := mparticle.NewMParticleTracker("key", "secret", true)
 
 	err := tracker.Track(
 		context.Background(),

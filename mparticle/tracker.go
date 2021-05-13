@@ -1,4 +1,4 @@
-package main
+package mparticle
 
 import (
 	"context"
@@ -6,26 +6,8 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/mParticle/mparticle-go-sdk/events"
+	"github.com/utilitywarehouse/trackers-go"
 )
-
-type SchemaInfo interface {
-	Name() string
-	Version() int64
-}
-
-type Event interface {
-	Payload() map[string]string
-	Name() string
-}
-
-type Attribute interface {
-	Name() string
-	Value() interface{}
-}
-
-type Identity interface {
-	Map() map[string]string
-}
 
 type MParticleTracker struct {
 	Environment events.Environment
@@ -54,8 +36,8 @@ func NewMParticleTracker(APIKey, APISecret string, isDev bool) *MParticleTracker
 
 func (t *MParticleTracker) Track(
 	ctx context.Context,
-	schema SchemaInfo,
-	identity Identity,
+	schema trackers.SchemaInfo,
+	identity trackers.Identity,
 	payloads ...interface{},
 ) error {
 
@@ -86,14 +68,14 @@ func (t *MParticleTracker) Track(
 
 	for _, p := range payloads {
 		switch x := p.(type) {
-		case Event:
+		case trackers.Event:
 			customEvent := events.NewCustomEvent()
 			customEvent.Data.EventName = x.Name()
 			customEvent.Data.CustomEventType = events.OtherCustomEventType
 			customEvent.Data.CustomAttributes = x.Payload()
 			batch.Events = append(batch.Events, customEvent)
 			break
-		case Attribute:
+		case trackers.Attribute:
 			batch.UserAttributes[x.Name()] = x.Value()
 		default:
 			return errors.New("could not convert payloads into either Event or Attribute")
