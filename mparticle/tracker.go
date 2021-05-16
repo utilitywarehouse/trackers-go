@@ -2,9 +2,7 @@ package mparticle
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/mParticle/mparticle-go-sdk/events"
 	"github.com/utilitywarehouse/trackers-go"
 )
@@ -34,11 +32,62 @@ func NewMParticleTracker(APIKey, APISecret string, isDev bool) *MParticleTracker
 	}
 }
 
+func buildIdentity(mapped map[string]string) *events.UserIdentities {
+	id := &events.UserIdentities{}
+
+	for key, val := range mapped {
+		switch key {
+		case "Other":
+			id.Other = val
+			break
+		case "CustomerID":
+			id.CustomerID = val
+			break
+		case "Facebook":
+			id.Facebook = val
+			break
+		case "Twitter":
+			id.Twitter = val
+			break
+		case "Google":
+			id.Google = val
+			break
+		case "Microsoft":
+			id.Microsoft = val
+			break
+		case "Yahoo":
+			id.Yahoo = val
+			break
+		case "Email":
+			id.Email = val
+			break
+		case "Alias":
+			id.Alias = val
+			break
+		case "FacebookCustomAudienceID":
+			id.FacebookCustomAudienceID = val
+			break
+		case "OtherID2":
+			id.OtherID2 = val
+			break
+		case "OtherID3":
+			id.OtherID3 = val
+			break
+		case "OtherID4":
+			id.OtherID4 = val
+			break
+		}
+	}
+
+	return id
+}
+
 func (t *MParticleTracker) Track(
 	ctx context.Context,
 	schema trackers.SchemaInfo,
 	identity trackers.Identity,
-	payloads ...interface{},
+	evs []trackers.Event,
+	attribs []trackers.Attribute,
 ) error {
 
 	batch := events.Batch{Environment: t.Environment}
@@ -50,36 +99,21 @@ func (t *MParticleTracker) Track(
 		},
 	}
 
-	batch.UserIdentities = &events.UserIdentities{}
-
-	for key, val := range identity.Map() {
-		switch key {
-		case "OtherID4":
-			batch.UserIdentities.OtherID4 = val
-			break
-		case "Email":
-			batch.UserIdentities.Email = val
-			break
-		}
-	}
+	batch.UserIdentities = buildIdentity(identity.Map())
 
 	batch.UserAttributes = make(map[string]interface{})
 	batch.Events = []events.Event{}
 
-	for _, p := range payloads {
-		switch x := p.(type) {
-		case trackers.Event:
-			customEvent := events.NewCustomEvent()
-			customEvent.Data.EventName = x.Name()
-			customEvent.Data.CustomEventType = events.OtherCustomEventType
-			customEvent.Data.CustomAttributes = x.Payload()
-			batch.Events = append(batch.Events, customEvent)
-			break
-		case trackers.Attribute:
-			batch.UserAttributes[x.Name()] = x.Value()
-		default:
-			return errors.New("could not convert payloads into either Event or Attribute")
-		}
+	for _, x := range evs {
+		customEvent := events.NewCustomEvent()
+		customEvent.Data.EventName = x.Name()
+		customEvent.Data.CustomEventType = events.OtherCustomEventType
+		customEvent.Data.CustomAttributes = x.Payload()
+		batch.Events = append(batch.Events, customEvent)
+	}
+
+	for _, x := range attribs {
+		batch.UserAttributes[x.Name()] = x.Value()
 	}
 
 	calLCtx := context.WithValue(
@@ -90,8 +124,6 @@ func (t *MParticleTracker) Track(
 			APISecret: t.APISecret,
 		},
 	)
-
-	spew.Dump(batch)
 
 	result, err := t.Client.EventsAPI.UploadEvents(calLCtx, batch)
 

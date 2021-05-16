@@ -26,6 +26,7 @@ type Tracker interface {
 		ctx context.Context,
 		schema SchemaInfo,
 		identity Identity,
-		payloads ...interface{},
+		events []Event,
+		attributes []Attribute,
 	)
 }
