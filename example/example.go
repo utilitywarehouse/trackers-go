@@ -2,15 +2,21 @@ package main
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/utilitywarehouse/trackers-go"
 	"github.com/utilitywarehouse/trackers-go/example/schema"
 	"github.com/utilitywarehouse/trackers-go/mparticle"
-	"log"
 )
 
 func main() {
+	httpClient := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 
-	tracker := mparticle.NewMParticleTracker("key", "secret", true)
+	tracker := mparticle.NewMParticleTracker("url", "key", "secret", httpClient, true)
 
 	err := tracker.Track(
 		context.Background(),
@@ -32,5 +38,4 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 }
