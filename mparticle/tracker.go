@@ -3,33 +3,35 @@ package mparticle
 import (
 	"context"
 	"fmt"
-	"github.com/mParticle/mparticle-go-sdk/events"
-	"github.com/utilitywarehouse/trackers-go"
+	"net/http"
 	"strconv"
+
+	"github.com/mParticle/mparticle-go-sdk/events"
+
+	"github.com/utilitywarehouse/trackers-go"
 )
 
 type MParticleTracker struct {
-	Environment events.Environment
-	APIKey      string
-	APISecret   string
-	Client      *events.APIClient
+	environment events.Environment
+	auth        events.BasicAuth
+	client      *events.APIClient
 }
 
-func NewMParticleTracker(APIKey, APISecret string, isDev bool) *MParticleTracker {
-
+func NewMParticleTracker(url, apiKey, apiSecret string, client *http.Client, isDev bool) *MParticleTracker {
 	env := events.ProductionEnvironment
-
 	if isDev {
 		env = events.DevelopmentEnvironment
 	}
-
-	client := events.NewAPIClient(events.NewConfiguration())
-
+	cfg := events.NewConfiguration()
+	cfg.BasePath = url
+	cfg.HTTPClient = client
 	return &MParticleTracker{
-		Environment: env,
-		APIKey:      APIKey,
-		APISecret:   APISecret,
-		Client:      client,
+		environment: env,
+		client:      events.NewAPIClient(cfg),
+		auth: events.BasicAuth{
+			APIKey:    apiKey,
+			APISecret: apiSecret,
+		},
 	}
 }
 
@@ -40,43 +42,30 @@ func buildIdentity(mapped map[string]string) *events.UserIdentities {
 		switch key {
 		case "Other":
 			id.Other = val
-			break
 		case "CustomerID":
 			id.CustomerID = val
-			break
 		case "Facebook":
 			id.Facebook = val
-			break
 		case "Twitter":
 			id.Twitter = val
-			break
 		case "Google":
 			id.Google = val
-			break
 		case "Microsoft":
 			id.Microsoft = val
-			break
 		case "Yahoo":
 			id.Yahoo = val
-			break
 		case "Email":
 			id.Email = val
-			break
 		case "Alias":
 			id.Alias = val
-			break
 		case "FacebookCustomAudienceID":
 			id.FacebookCustomAudienceID = val
-			break
 		case "OtherID2":
 			id.OtherID2 = val
-			break
 		case "OtherID3":
 			id.OtherID3 = val
-			break
 		case "OtherID4":
 			id.OtherID4 = val
-			break
 		}
 	}
 
@@ -90,20 +79,18 @@ func (t *MParticleTracker) Track(
 	evs []trackers.Event,
 	attribs []trackers.Attribute,
 ) error {
-
-	batch := events.Batch{Environment: t.Environment}
-
-	batch.BatchContext = &events.BatchContext{
-		DataPlan: &events.DataPlanContext{
-			PlanID:      schema.Name(),
-			PlanVersion: schema.Version(),
+	batch := events.Batch{
+		Environment: t.environment,
+		BatchContext: &events.BatchContext{
+			DataPlan: &events.DataPlanContext{
+				PlanID:      schema.Name(),
+				PlanVersion: schema.Version(),
+			},
 		},
+		UserIdentities: buildIdentity(identity.Map()),
+		UserAttributes: make(map[string]interface{}),
+		Events:         []events.Event{},
 	}
-
-	batch.UserIdentities = buildIdentity(identity.Map())
-
-	batch.UserAttributes = make(map[string]interface{})
-	batch.Events = []events.Event{}
 
 	for _, x := range evs {
 		customEvent := events.NewCustomEvent()
@@ -125,14 +112,10 @@ func (t *MParticleTracker) Track(
 	calLCtx := context.WithValue(
 		ctx,
 		events.ContextBasicAuth,
-		events.BasicAuth{
-			APIKey:    t.APIKey,
-			APISecret: t.APISecret,
-		},
+		t.auth,
 	)
 
-	result, err := t.Client.EventsAPI.UploadEvents(calLCtx, batch)
-
+	result, err := t.client.EventsAPI.UploadEvents(calLCtx, batch)
 	if result == nil || result.StatusCode != 202 {
 		return fmt.Errorf(
 			"Error while uploading!\nstatus: %v\nresponse body: %#v",
