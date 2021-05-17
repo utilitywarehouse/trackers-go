@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mParticle/mparticle-go-sdk/events"
 	"github.com/utilitywarehouse/trackers-go"
+	"strconv"
 )
 
 type MParticleTracker struct {
@@ -109,6 +110,11 @@ func (t *MParticleTracker) Track(
 		customEvent.Data.EventName = x.Name()
 		customEvent.Data.CustomEventType = events.OtherCustomEventType
 		customEvent.Data.CustomAttributes = x.Payload()
+
+		//attach some event ID data as custom flags
+		customEvent.Data.CustomAttributes["uw.schema-name"] = schema.Name()
+		customEvent.Data.CustomAttributes["uw.schema-version"] = strconv.FormatInt(schema.Version(), 10)
+
 		batch.Events = append(batch.Events, customEvent)
 	}
 
