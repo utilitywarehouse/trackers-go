@@ -60,11 +60,11 @@ func buildIdentity(mapped map[string]string) *events.UserIdentities {
 			id.Alias = val
 		case "FacebookCustomAudienceID":
 			id.FacebookCustomAudienceID = val
-		case "OtherID2":
+		case "Other2":
 			id.OtherID2 = val
-		case "OtherID3":
+		case "Other3":
 			id.OtherID3 = val
-		case "OtherID4":
+		case "Other4":
 			id.OtherID4 = val
 		}
 	}
