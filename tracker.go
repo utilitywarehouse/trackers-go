@@ -28,5 +28,5 @@ type Tracker interface {
 		identity Identity,
 		events []Event,
 		attributes []Attribute,
-	)
+	) error
 }
