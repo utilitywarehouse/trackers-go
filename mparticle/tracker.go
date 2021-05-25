@@ -11,6 +11,8 @@ import (
 	"github.com/utilitywarehouse/trackers-go"
 )
 
+var _ trackers.Tracker = (*MParticleTracker)(nil)
+
 type MParticleTracker struct {
 	environment events.Environment
 	auth        events.BasicAuth
