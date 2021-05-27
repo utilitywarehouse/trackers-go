@@ -119,11 +119,14 @@ func (t *MParticleTracker) Track(
 
 	result, err := t.client.EventsAPI.UploadEvents(calLCtx, batch)
 	if result == nil || result.StatusCode != 202 {
-		return fmt.Errorf(
-			"Error while uploading!\nstatus: %v\nresponse body: %#v",
-			err.(events.GenericError).Error(),
-			err.(events.GenericError).Model(),
-		)
+		if gerr, ok := err.(events.GenericError); ok {
+			return fmt.Errorf(
+				"Error while uploading!\nstatus: %v\nresponse body: %#v",
+				gerr.Error(),
+				gerr.Model(),
+			)
+		}
+		return fmt.Errorf("Unexpected error while uploading!\nerror:%#v", err)
 	}
 
 	return nil
