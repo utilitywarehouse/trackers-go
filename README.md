@@ -4,7 +4,8 @@ Go implementations of event tracking.
 
 ## Mparticle Usage 
 You will need:
-- a configured [input feed](https://docs.mparticle.com/guides/getting-started/create-an-input/) for mparticle
+- a configured [input feed](https://docs.mparticle.com/guides/getting-started/create-an-input/) for mparticle for your api key and secret.
+- the url which in most cases is `https://s2s.mparticle.com/v2`
 - your types [generated](https://github.com/utilitywarehouse/tracking-types-gen/) from your [data plan](https://github.com/utilitywarehouse/analytics-contracts).
 
 First install using `go get github.com/utilitywarehouse/trackers-go`
