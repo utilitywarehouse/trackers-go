@@ -1,6 +1,10 @@
 package trackers
 
-import "context"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type SchemaInfo interface {
 	Name() string
@@ -29,4 +33,21 @@ type Tracker interface {
 		events []Event,
 		attributes []Attribute,
 	) error
+}
+
+var (
+	accountNSUUID = uuid.NewSHA1(uuid.UUID{}, []byte("customer"))
+	personNSUUID  = uuid.NewSHA1(uuid.UUID{}, []byte("person"))
+)
+
+func CustomerPersonIDFromAccountID(accountID string) string {
+	return uuid.NewSHA1(personNSUUID, []byte(accountID+"-1")).String()
+}
+
+func CustomerPersonIDFromAccountNumber(accountNumber string) string {
+	return CustomerPersonIDFromAccountID(hashAccountID(accountNumber))
+}
+
+func hashAccountID(accountNumber string) string {
+	return uuid.NewSHA1(accountNSUUID, []byte(accountNumber)).String()
 }
