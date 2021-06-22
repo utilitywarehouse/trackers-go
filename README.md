@@ -24,7 +24,7 @@ Then an event can be tracked by calling the `track` method.
 err := tracker.Track(
 		context.Background(),
 		schema.Info,
-		&schema.Identity{CustomerPersonId: "abc"},
+		&schema.Identity{CustomerPersonId: trackers.CustomerPersonIDFromAccountNumber("0000000")},
 		[]trackers.Event{
 			&schema.HomeInsuranceQuoteAttemptedEvent{
 				QuoteId:        "abc",
