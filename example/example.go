@@ -21,7 +21,7 @@ func main() {
 	err := tracker.Track(
 		context.Background(),
 		schema.Info,
-		&schema.Identity{CustomerPersonId: "abc"},
+		&schema.Identity{CustomerPersonId: trackers.CustomerPersonIDFromAccountNumber("0000000")},
 		[]trackers.Event{
 			&schema.HomeInsuranceQuoteAttemptedEvent{
 				QuoteId:        "abc",
