@@ -35,6 +35,17 @@ type Tracker interface {
 	) error
 }
 
+type BulkTracker interface {
+	BulkTrack(ctx context.Context, batches []Batch) error
+}
+
+type Batch struct {
+	Schema     SchemaInfo
+	Identity   Identity
+	Events     []Event
+	Attributes []Attribute
+}
+
 var (
 	accountNSUUID = uuid.NewSHA1(uuid.UUID{}, []byte("customer"))
 	personNSUUID  = uuid.NewSHA1(uuid.UUID{}, []byte("person"))

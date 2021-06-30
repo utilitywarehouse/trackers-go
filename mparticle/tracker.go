@@ -12,6 +12,7 @@ import (
 )
 
 var _ trackers.Tracker = (*MParticleTracker)(nil)
+var _ trackers.BulkTracker = (*MParticleTracker)(nil)
 
 type MParticleTracker struct {
 	environment events.Environment
@@ -81,8 +82,64 @@ func (t *MParticleTracker) Track(
 	evs []trackers.Event,
 	attribs []trackers.Attribute,
 ) error {
+
+	calLCtx := context.WithValue(
+		ctx,
+		events.ContextBasicAuth,
+		t.auth,
+	)
+	batch := toMParticleBatch(schema, identity, evs, attribs, t.environment)
+	result, err := t.client.EventsAPI.UploadEvents(calLCtx, batch)
+	if result == nil || result.StatusCode != 202 {
+		if gerr, ok := err.(events.GenericError); ok {
+			return fmt.Errorf(
+				"Error while uploading!\nstatus: %v\nresponse body: %#v",
+				gerr.Error(),
+				gerr.Model(),
+			)
+		}
+		return fmt.Errorf("Unexpected error while uploading!\nerror:%#v", err)
+	}
+
+	return nil
+}
+
+func (t *MParticleTracker) BulkTrack(ctx context.Context, batches []trackers.Batch) error {
+
+	calLCtx := context.WithValue(
+		ctx,
+		events.ContextBasicAuth,
+		t.auth,
+	)
+	mpBatches := []events.Batch{}
+	for _, b := range batches {
+		mpBatches = append(mpBatches, toMParticleBatch(b.Schema, b.Identity, b.Events, b.Attributes, t.environment))
+	}
+	if len(mpBatches) == 0 {
+		return nil
+	}
+	result, err := t.client.EventsAPI.BulkUploadEvents(calLCtx, mpBatches)
+	if result == nil || result.StatusCode != 202 {
+		if gerr, ok := err.(events.GenericError); ok {
+			return fmt.Errorf(
+				"Error while uploading!\nstatus: %v\nresponse body: %#v",
+				gerr.Error(),
+				gerr.Model(),
+			)
+		}
+		return fmt.Errorf("Unexpected error while uploading!\nerror:%#v", err)
+	}
+
+	return nil
+}
+
+func toMParticleBatch(schema trackers.SchemaInfo,
+	identity trackers.Identity,
+	evs []trackers.Event,
+	attribs []trackers.Attribute,
+	env events.Environment) events.Batch {
 	batch := events.Batch{
-		Environment: t.environment,
+		Environment: env,
 		BatchContext: &events.BatchContext{
 			DataPlan: &events.DataPlanContext{
 				PlanID:      schema.Name(),
@@ -110,24 +167,5 @@ func (t *MParticleTracker) Track(
 	for _, x := range attribs {
 		batch.UserAttributes[x.Name()] = x.Value()
 	}
-
-	calLCtx := context.WithValue(
-		ctx,
-		events.ContextBasicAuth,
-		t.auth,
-	)
-
-	result, err := t.client.EventsAPI.UploadEvents(calLCtx, batch)
-	if result == nil || result.StatusCode != 202 {
-		if gerr, ok := err.(events.GenericError); ok {
-			return fmt.Errorf(
-				"Error while uploading!\nstatus: %v\nresponse body: %#v",
-				gerr.Error(),
-				gerr.Model(),
-			)
-		}
-		return fmt.Errorf("Unexpected error while uploading!\nerror:%#v", err)
-	}
-
-	return nil
+	return batch
 }
