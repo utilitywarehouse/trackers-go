@@ -20,7 +20,8 @@ func main() {
 
 	err := tracker.Track(
 		context.Background(),
-		schema.Info,
+		// do not pass in schema to avoid errors in the mparticle dashboard because we currently don't have any plans configured in mparticle
+		trackers.NoSchema,
 		&schema.Identity{CustomerPersonId: trackers.CustomerPersonIDFromAccountNumber("0000000")},
 		[]trackers.Event{
 			&schema.HomeInsuranceQuoteAttemptedEvent{
