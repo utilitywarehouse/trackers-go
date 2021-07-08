@@ -139,18 +139,19 @@ func toMParticleBatch(schema trackers.SchemaInfo,
 	attribs []trackers.Attribute,
 	env events.Environment) events.Batch {
 	batch := events.Batch{
-		Environment: env,
-		BatchContext: &events.BatchContext{
-			DataPlan: &events.DataPlanContext{
-				PlanID:      schema.Name(),
-				PlanVersion: schema.Version(),
-			},
-		},
+		Environment:    env,
 		UserIdentities: buildIdentity(identity.Map()),
 		UserAttributes: make(map[string]interface{}),
 		Events:         []events.Event{},
 	}
-
+	if schema != trackers.NoSchema {
+		batch.BatchContext = &events.BatchContext{
+			DataPlan: &events.DataPlanContext{
+				PlanID:      schema.Name(),
+				PlanVersion: schema.Version(),
+			},
+		}
+	}
 	for _, x := range evs {
 		customEvent := events.NewCustomEvent()
 		customEvent.Data.EventName = x.Name()

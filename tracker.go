@@ -11,6 +11,18 @@ type SchemaInfo interface {
 	Version() int64
 }
 
+type schema string
+
+func (o schema) Name() string {
+	return ""
+}
+
+func (o schema) Version() int64 {
+	return -1
+}
+
+const NoSchema = schema("")
+
 type Event interface {
 	Payload() map[string]string
 	Name() string
