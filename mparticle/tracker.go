@@ -158,9 +158,12 @@ func toMParticleBatch(schema trackers.SchemaInfo,
 		customEvent.Data.CustomEventType = events.OtherCustomEventType
 		customEvent.Data.CustomAttributes = x.Payload()
 
-		//attach some event ID data as custom flags
-		customEvent.Data.CustomAttributes["uw.schema-name"] = schema.Name()
-		customEvent.Data.CustomAttributes["uw.schema-version"] = strconv.FormatInt(schema.Version(), 10)
+		if customEvent.Data.CustomAttributes["uw.schema-name"] == "" {
+			customEvent.Data.CustomAttributes["uw.schema-name"] = schema.Name()
+		}
+		if customEvent.Data.CustomAttributes["uw.schema-version"] == "" {
+			customEvent.Data.CustomAttributes["uw.schema-version"] = strconv.FormatInt(schema.Version(), 10)
+		}
 
 		batch.Events = append(batch.Events, customEvent)
 	}
