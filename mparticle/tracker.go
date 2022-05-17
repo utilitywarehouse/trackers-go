@@ -156,8 +156,10 @@ func toMParticleBatch(schema trackers.SchemaInfo,
 		customEvent := events.NewCustomEvent()
 		customEvent.Data.EventName = x.Name()
 		customEvent.Data.CustomEventType = events.OtherCustomEventType
-		customEvent.Data.CustomAttributes = x.Payload()
-
+		customEvent.Data.CustomAttributes = make(map[string]interface{})
+		for k, v := range x.Payload() {
+			customEvent.Data.CustomAttributes[k] = v
+		}
 		if customEvent.Data.CustomAttributes["uw.schema-name"] == "" {
 			customEvent.Data.CustomAttributes["uw.schema-name"] = schema.Name()
 		}

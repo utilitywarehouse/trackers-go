@@ -1,8 +1,8 @@
 module github.com/utilitywarehouse/trackers-go
 
-go 1.13
+go 1.18
 
 require (
-	github.com/google/uuid v1.2.0 // indirect
-	github.com/mParticle/mparticle-go-sdk v1.1.2
+	github.com/google/uuid v1.3.0
+	github.com/mParticle/mparticle-go-sdk v1.1.5
 )
