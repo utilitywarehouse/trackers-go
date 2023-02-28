@@ -6,3 +6,5 @@ github.com/mParticle/mparticle-go-sdk v1.1.2 h1:JFwvw24rX6cjnQOYVy2Lu/1du8wDrQiM
 github.com/mParticle/mparticle-go-sdk v1.1.2/go.mod h1:WvI1Svcvr+yujSZ75wcYp2EPmlZCi1CK2ur3Au4eFYQ=
 github.com/mParticle/mparticle-go-sdk v1.1.5 h1:9xwvi208srON7gtTzv1ieI9/xVosAbQyj7GP/7dBJ1s=
 github.com/mParticle/mparticle-go-sdk v1.1.5/go.mod h1:g3PkiKpYO5YzSSFUK4NyQLeVtxvwaAqki02ApYMALUo=
+github.com/mParticle/mparticle-go-sdk v1.1.6 h1:p2K5Cu5xdldxb0TQBpwvvwd602PHPXuYa0hxBtJrkAM=
+github.com/mParticle/mparticle-go-sdk v1.1.6/go.mod h1:g3PkiKpYO5YzSSFUK4NyQLeVtxvwaAqki02ApYMALUo=
